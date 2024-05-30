@@ -25,7 +25,7 @@ A avaliação não será exclusivamente baseada na solução. Queremos saber de 
 1. Clone o repositório
 
 ```bash
-https://github.com/Cubo-Midia/Teste_backend_estagio
+https://github.com/Cubo-Midia/Teste_backend_estagio.git
 ```
 
 2. Instale as dependências
