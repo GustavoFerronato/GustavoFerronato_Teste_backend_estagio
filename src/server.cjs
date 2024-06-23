@@ -1,21 +1,23 @@
 const fs = require('fs');
 const fastify = require('fastify')();
 
-// Use o caminho absoluto para garantir que está correto
+
 const filePath = 'C:/Users/GUSTAVO/Desktop/Teste_backend_estagio/data/measurements.txt';
 
-let sortedStations = []; // Variável global para armazenar as estações
+let sortedStations = []; 
 
-fs.readFile(filePath, 'utf8', (err, data) => {
+//Le e processa os dados
+fs.readFile(filePath, 'utf8', (err, data) => {              
     if (err) {
         console.error('Erro ao ler o arquivo:', err);
         process.exit(1);
     }
-    const parsedData = processFileContent(data);
-    const stations = groupCitiesIntoStations(parsedData);
-    sortedStations = sortStationsAlphabetically(stations);
+    const parsedData = processFileContent(data); 
+    const stations = groupCitiesIntoStations(parsedData); 
+    sortedStations = sortStationsAlphabetically(stations); 
 });
 
+//Rota raiz
 fastify.get('/', (req, reply) => {
     const stationsWithoutTemperatures = sortedStations.map(station => {
         const { temperatures, ...rest } = station;
@@ -24,6 +26,7 @@ fastify.get('/', (req, reply) => {
     reply.send(stationsWithoutTemperatures);
 });
 
+//Rota para Estação Específica
 fastify.get('/station/:name', (req, reply) => {
     const stationName = req.params.name;
     const stationData = sortedStations.filter(station => station.city === stationName);
@@ -32,7 +35,7 @@ fastify.get('/station/:name', (req, reply) => {
         return;
     }
 
-    // Busca todas as ocorrências da cidade correspondente e retorna com os cálculos e temperaturas
+    
     const allInstances = stationData.map(station => {
         return {
             city: station.city,
@@ -47,6 +50,7 @@ fastify.get('/station/:name', (req, reply) => {
     reply.send(allInstances);
 });
 
+//Rota para Temperatura Específica
 fastify.get('/temperatura/:temperature', (req, reply) => {
     const temperature = parseFloat(req.params.temperature);
     if (isNaN(temperature)) {
@@ -71,6 +75,7 @@ fastify.get('/temperatura/:temperature', (req, reply) => {
     reply.send(uniqueStations);
 });
 
+//Inicia o Servidor
 fastify.listen({ port: 3000 }, (err, address) => {
     if (err) {
         console.error('Erro ao iniciar o servidor:', err);
@@ -79,6 +84,7 @@ fastify.listen({ port: 3000 }, (err, address) => {
     console.log(`Servidor rodando em ${address}`);
 });
 
+//Processa o conteúdo do arquivo, separando cidade e temperatura.
 function processFileContent(content) {
     const lines = content.split('\n').filter(line => line.trim() !== '');
     const data = lines.map(line => {
@@ -88,19 +94,23 @@ function processFileContent(content) {
     return data;
 }
 
+//Cálculo Temperatura Média 
 function calculateAverageTemperature(temperatures) {
     const totalTemperature = temperatures.reduce((sum, temp) => sum + temp, 0);
     return totalTemperature / temperatures.length;
 }
 
+//Cálculo Temperatura Máxima
 function findMaxTemperature(temperatures) {
     return Math.max(...temperatures);
 }
 
+//Cálculo Temperatura Mínima
 function findMinTemperature(temperatures) {
     return Math.min(...temperatures);
 }
 
+//Localizar Moda
 function calculateModeTemperature(temperatures) {
     const frequency = {};
     temperatures.forEach(temp => {
@@ -119,7 +129,8 @@ function calculateModeTemperature(temperatures) {
     return modeTemperature;
 }
 
-function groupCitiesIntoStations(data) {
+//Agrupa os dados por cidade e calcula as estatísticas
+function groupCitiesIntoStations(data) {   
     const stations = {};
     data.forEach(entry => {
         if (!stations[entry.city]) {
@@ -140,6 +151,7 @@ function groupCitiesIntoStations(data) {
     return stations;
 }
 
+// Ordena Alfabeticamente
 function sortStationsAlphabetically(stations) {
     return Object.values(stations)
         .sort((a, b) => a.city.localeCompare(b.city));
